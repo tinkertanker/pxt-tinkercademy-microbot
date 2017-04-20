@@ -73,11 +73,20 @@ namespace microbot{
 				}
 			}
 
-			//no line following capabilities
-
-			_ab->write(SERVO_SPEED_VALUE);
-			_bb->write(SERVO_SPEED_VALUE);
+			if(lf == 0){
+				_ab->write(SERVO_SPEED_VALUE);
+				_bb->write(SERVO_SPEED_VALUE);
+			} else {
+				if(_lr->read() > STANDARD_LF_THRESHOLD) {
+					_ab->write(0.0f);
+					_bb->write(0.5f);
+				} else if(_rr->read() > STANDARD_LF_THRESHOLD) {
+					_ab->write(0.5f);
+					_bb->write(0.0f);
+				}
+			}
 			uBit.sleep(100); //do nothing
+			
 		}
 	}
 
