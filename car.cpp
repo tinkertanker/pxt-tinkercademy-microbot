@@ -1,8 +1,8 @@
 #include "pxt.h"
 
-#define STANDARD_SPEED_VALUE 0.4f
+#define STANDARD_SPEED_VALUE 512
 #define SERVO_SPEED_VALUE 0.8f
-#define STANDARD_LF_THRESHOLD 0.8f
+#define STANDARD_LF_THRESHOLD 0.7f
 
 enum class CarType{
 	Servo = 0,
@@ -15,8 +15,7 @@ enum class CarType{
 namespace microbot{
 
 	DigitalOut *_aa, *_ba;
-	PwmOut *_ab, *_bb, *_dir;
-	MicroBitPin *_mbp;
+	MicroBitPin *_mbp, *_ab, *_bb;
 	AnalogIn *_lr, *_rr;
 
 	bool running = false;
@@ -28,9 +27,9 @@ namespace microbot{
 			if(!running) {
 				//stop
 				_aa->write(1);
-				_ab->write(1.0f);
+				_ab->setAnalogValue(1024);
 				_ba->write(1);
-				_bb->write(1.0f);
+				_bb->setAnalogValue(1024);
 				while(!running){
 					uBit.sleep(100); //do nothing
 				}
@@ -38,25 +37,25 @@ namespace microbot{
 			if(lf == 0){
 				//non line following mode
 				_aa->write(0);
-				_ab->write(STANDARD_SPEED_VALUE);
+				_ab->setAnalogValue(STANDARD_SPEED_VALUE);
 				_ba->write(0);
-				_bb->write(STANDARD_SPEED_VALUE);
+				_bb->setAnalogValue(STANDARD_SPEED_VALUE);
 			} else {
 				if(_lr->read() > STANDARD_LF_THRESHOLD) {
 					_aa->write(0);
-					_ab->write(STANDARD_SPEED_VALUE);
+					_ab->setAnalogValue(STANDARD_SPEED_VALUE);
 					_ba->write(1);
-					_bb->write(1.0f);
+					_bb->setAnalogValue(1024);
 				} else if(_rr->read() > STANDARD_LF_THRESHOLD) {
 					_aa->write(1);
-					_ab->write(1.0f);
+					_ab->setAnalogValue(1024);
 					_ba->write(0);
-					_bb->write(STANDARD_SPEED_VALUE);
+					_bb->setAnalogValue(STANDARD_SPEED_VALUE);
 				} else {
 					_aa->write(0);
-					_ab->write(STANDARD_SPEED_VALUE);
+					_ab->setAnalogValue(STANDARD_SPEED_VALUE);
 					_ba->write(0);
-					_bb->write(STANDARD_SPEED_VALUE);
+					_bb->setAnalogValue(STANDARD_SPEED_VALUE);
 				}
 			}
 			
@@ -68,26 +67,26 @@ namespace microbot{
 		while(true){
 			if(!running) {
 				//stop
-				_ab->write(0.0f);
-				_bb->write(0.0f);
+				_ab->setAnalogValue(0);
+				_bb->setAnalogValue(0);
 				while(!running){
 					uBit.sleep(100); //do nothing
 				}
 			}
 
 			if(lf == 0){
-				_ab->write(SERVO_SPEED_VALUE);
-				_bb->write(SERVO_SPEED_VALUE);
+				_ab->setServoValue(SERVO_SPEED_VALUE);
+				_bb->setServoValue(SERVO_SPEED_VALUE);
 			} else {
 				if(_lr->read() > STANDARD_LF_THRESHOLD) {
-					_ab->write(0.0f);
-					_bb->write(0.5f);
+					_ab->setServoValue(88);
+					_bb->setServoValue(0);
 				} else if(_rr->read() > STANDARD_LF_THRESHOLD) {
-					_ab->write(0.5f);
-					_bb->write(0.0f);
+					_ab->setServoValue(180);
+					_bb->setServoValue(85);
 				} else {
-					_ab->write(0.5f);
-					_bb->write(0.5f);
+					_ab->setServoValue(95);
+					_bb->setServoValue(75);
 				}
 			}
 			uBit.sleep(100); //do nothing
@@ -103,27 +102,26 @@ namespace microbot{
 	void init(CarType car){
 		switch (car){
 			case CarType::Servo:
-				_ab = new PwmOut(MICROBIT_PIN_P15);
-				_bb = new PwmOut(MICROBIT_PIN_P16);
+				_ab = new MicroBitPin(MICROBIT_ID_IO_P15, MICROBIT_PIN_P15, PIN_CAPABILITY_ALL);
+				_bb = new MicroBitPin(MICROBIT_ID_IO_P16, MICROBIT_PIN_P16, PIN_CAPABILITY_ALL);
 				running = false;
 				create_fiber(diet_sprite);
 			break;
 			case CarType::Standard:
 				_aa = new DigitalOut(MICROBIT_PIN_P13);
-				_ab = new PwmOut(MICROBIT_PIN_P14);
+				_ab = new MicroBitPin(MICROBIT_ID_IO_P14, MICROBIT_PIN_P14, PIN_CAPABILITY_ALL);
 				_ba = new DigitalOut(MICROBIT_PIN_P15);
-				_bb = new PwmOut(MICROBIT_PIN_P16);
+				_bb = new MicroBitPin(MICROBIT_ID_IO_P16, MICROBIT_PIN_P16, PIN_CAPABILITY_ALL);
 				
-				//_dir = new PwmOut(MICROBIT_PIN_P12);
 				_mbp = new MicroBitPin(MICROBIT_ID_IO_P12, MICROBIT_PIN_P12, PIN_CAPABILITY_ALL);
 
 				_lr = new AnalogIn(MICROBIT_PIN_P0);
 				_rr = new AnalogIn(MICROBIT_PIN_P1);
 
 				_aa -> write(1);
-				_ab -> write(1.0f);
+				_ab -> setAnalogValue(1024);
 				_ba -> write(1);
-				_bb -> write(1.0f);
+				_bb -> setAnalogValue(1024);
 				running = false;
 				create_fiber(diet_coke);
 			break;
