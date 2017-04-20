@@ -1,0 +1,17 @@
+{
+    "name": "car",
+    "version": "0.0.1",
+    "description": "Tinkercademy package for controlling our car",
+    "license": "MIT",
+    "dependencies": {
+        "core": "*"
+    },
+    "files": [
+        "car.cpp",
+        "shims.d.ts",
+        "enums.d.ts"
+    ],
+    "testFiles": [
+    ],
+    "public": false
+}
