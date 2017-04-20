@@ -3,9 +3,6 @@
 #define STANDARD_SPEED_VALUE 0.4f
 #define SERVO_SPEED_VALUE 0.8f
 #define STANDARD_LF_THRESHOLD 0.8f
-#define STANDARD_DIRECTION_STRAIGHT 0.8f
-#define STANDARD_DIRECTION_LEFT 0.22f
-#define STANDARD_DIRECTION_RIGHT 0.78f
 
 enum class CarType{
 	Servo = 0,
@@ -55,6 +52,11 @@ namespace microbot{
 					_ab->write(1.0f);
 					_ba->write(0);
 					_bb->write(STANDARD_SPEED_VALUE);
+				} else {
+					_aa->write(0);
+					_ab->write(STANDARD_SPEED_VALUE);
+					_ba->write(0);
+					_bb->write(STANDARD_SPEED_VALUE);
 				}
 			}
 			
@@ -83,6 +85,9 @@ namespace microbot{
 				} else if(_rr->read() > STANDARD_LF_THRESHOLD) {
 					_ab->write(0.5f);
 					_bb->write(0.0f);
+				} else {
+					_ab->write(0.5f);
+					_bb->write(0.5f);
 				}
 			}
 			uBit.sleep(100); //do nothing
