@@ -102,8 +102,10 @@ namespace microbot{
 	void init(CarType car){
 		switch (car){
 			case CarType::Servo:
-				_ab = new MicroBitPin(MICROBIT_ID_IO_P15, MICROBIT_PIN_P15, PIN_CAPABILITY_ALL);
+				_ab = new MicroBitPin(MICROBIT_ID_IO_P2, MICROBIT_PIN_P2, PIN_CAPABILITY_ALL);
 				_bb = new MicroBitPin(MICROBIT_ID_IO_P16, MICROBIT_PIN_P16, PIN_CAPABILITY_ALL);
+				_lr = new AnalogIn(MICROBIT_PIN_P0);
+				_rr = new AnalogIn(MICROBIT_PIN_P1);
 				running = false;
 				create_fiber(diet_sprite);
 			break;
