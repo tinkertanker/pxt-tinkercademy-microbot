@@ -4,6 +4,7 @@
     declare enum CarType {
     Servo = 0,
     Standard = 1,
+    SingleMotor = 2,
     }
 declare namespace microbot {
 }

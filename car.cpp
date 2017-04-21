@@ -6,7 +6,8 @@
 
 enum class CarType{
 	Servo = 0,
-	Standard = 1
+	Standard = 1,
+	SingleMotor = 2
 };
 
 
@@ -21,6 +22,21 @@ namespace microbot{
 	bool running = false;
 	int lh, rh, baseHeading;
 	int lf = 0;
+
+	void diet_fanta(){
+		while(true){
+			if(!running) {
+				//stop
+				_ba->write(0);
+				while(!running){
+					uBit.sleep(100); //do nothing
+				}
+			}
+			_ba->write(1);
+			
+			uBit.sleep(100); //do nothing
+		}
+	}
 
 	void diet_coke(){
 		while(true){
@@ -101,6 +117,14 @@ namespace microbot{
 	//% block="initialise car type %car"
 	void init(CarType car){
 		switch (car){
+			case CarType::SingleMotor:
+				_ba = new DigitalOut(MICROBIT_PIN_P16);
+				_mbp = new MicroBitPin(MICROBIT_ID_IO_P0, MICROBIT_PIN_P0, PIN_CAPABILITY_ALL);
+
+				_ba -> write(1);
+				running = false;
+				create_fiber(diet_fanta);
+			break;
 			case CarType::Servo:
 				_ab = new MicroBitPin(MICROBIT_ID_IO_P16, MICROBIT_PIN_P16, PIN_CAPABILITY_ALL);
 				_bb = new MicroBitPin(MICROBIT_ID_IO_P2, MICROBIT_PIN_P2, PIN_CAPABILITY_ALL);
