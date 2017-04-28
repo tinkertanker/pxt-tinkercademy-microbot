@@ -68,7 +68,7 @@ namespace microbot{
 				_bb->setAnalogValue(STANDARD_SPEED_VALUE);
 			} else {
 				_aa->write(0);
-				_ab->setAnalogValue(STANDARD_SPEED_VALUE/ 2);
+				_ab->setAnalogValue(STANDARD_SPEED_VALUE / 2);
 				_ba->write(0);
 				_bb->setAnalogValue(STANDARD_SPEED_VALUE / 2);
 				if(_lr->read() > STANDARD_LF_THRESHOLD) {
@@ -88,6 +88,8 @@ namespace microbot{
 		while(true){
 			if(!running) {
 				//stop
+				tr = false;
+				tl = false;
 				_ab->setAnalogValue(SERVO_STATIONARY_VALUE);
 				_bb->setAnalogValue(SERVO_STATIONARY_VALUE);
 				while(!running){
@@ -130,7 +132,7 @@ namespace microbot{
 		cf = car;
 		switch (car){
 			case CarType::Servo:
-				_ab = new MicroBitPin(MICROBIT_ID_IO_P3, MICROBIT_PIN_P3, PIN_CAPABILITY_ALL);
+				_ab = new MicroBitPin(MICROBIT_ID_IO_P16, MICROBIT_PIN_P16, PIN_CAPABILITY_ALL);
 				_bb = new MicroBitPin(MICROBIT_ID_IO_P2, MICROBIT_PIN_P2, PIN_CAPABILITY_ALL);
 
 				_lr = new AnalogIn(MICROBIT_PIN_P0);
