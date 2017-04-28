@@ -13,7 +13,9 @@ enum class CalibrationParameters {
 	ServoSpeed = 3,
 	ServoStationaryAngle = 4,
 	ServoTurnValue = 5,
-	LineFollowThresholdPercentage = 6
+	LineFollowThresholdPercentage = 6,
+	LineFollowSpeed = 7,
+	LineFollowAngle = 8
 };
 
 
@@ -30,7 +32,7 @@ namespace microbot{
 	bool tl = false, tr = false;
 	int lh, rh, baseHeading;
 	int lf = 0;
-	int STANDARD_SPEED_VALUE = 1023, STANDARD_DIRECTION_STRAIGHT = 97, STANDARD_TURN_VALUE = 50, SERVO_SPEED_VALUE = 160, SERVO_STATIONARY_VALUE = 90, SERVO_TURN_VALUE = 40;
+	int STANDARD_SPEED_VALUE = 1023, STANDARD_DIRECTION_STRAIGHT = 97, STANDARD_TURN_VALUE = 50, SERVO_SPEED_VALUE = 70, SERVO_STATIONARY_VALUE = 90, SERVO_TURN_VALUE = 40, LF_SPEED_VALUE = 100, LF_ANGLE = 50;
 	double STANDARD_LF_THRESHOLD = 0.7f;
 
 	void diet_fanta(){
@@ -68,13 +70,13 @@ namespace microbot{
 				_bb->setAnalogValue(STANDARD_SPEED_VALUE);
 			} else {
 				_aa->write(0);
-				_ab->setAnalogValue(STANDARD_SPEED_VALUE / 2);
+				_ab->setAnalogValue(LF_SPEED_VALUE);
 				_ba->write(0);
-				_bb->setAnalogValue(STANDARD_SPEED_VALUE / 2);
+				_bb->setAnalogValue(LF_SPEED_VALUE);
 				if(_lr->read() > STANDARD_LF_THRESHOLD) {
-					_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT - 20);
+					_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT - LF_ANGLE);
 				} else if(_rr->read() > STANDARD_LF_THRESHOLD) {
-					_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT + 20);
+					_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT + LF_ANGLE);
 				} else {
 					_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT);
 				}
@@ -99,10 +101,10 @@ namespace microbot{
 
 			if(tr) {
 				_ab->setServoValue(SERVO_STATIONARY_VALUE + SERVO_TURN_VALUE);
-				_bb->setServoValue(SERVO_STATIONARY_VALUE - SERVO_TURN_VALUE);
+				_bb->setServoValue(SERVO_STATIONARY_VALUE + SERVO_TURN_VALUE);
 			} else if (tl){
 				_ab->setServoValue(SERVO_STATIONARY_VALUE - SERVO_TURN_VALUE);
-				_bb->setServoValue(SERVO_STATIONARY_VALUE + SERVO_TURN_VALUE);
+				_bb->setServoValue(SERVO_STATIONARY_VALUE - SERVO_TURN_VALUE);
 			} else if(lf == 0){
 				_ab->setServoValue(SERVO_SPEED_VALUE);
 				_bb->setServoValue(SERVO_SPEED_VALUE);
@@ -114,8 +116,8 @@ namespace microbot{
 					_ab->setServoValue(180);
 					_bb->setServoValue(SERVO_STATIONARY_VALUE);
 				} else {
-					_ab->setServoValue(SERVO_SPEED_VALUE);
-					_bb->setServoValue(SERVO_SPEED_VALUE);
+					_ab->setServoValue(SERVO_STATIONARY_VALUE + SERVO_SPEED_VALUE);
+					_bb->setServoValue(SERVO_STATIONARY_VALUE - SERVO_SPEED_VALUE);
 				}
 			}
 			uBit.sleep(100); //do nothing
@@ -146,7 +148,7 @@ namespace microbot{
 				_ba = new DigitalOut(MICROBIT_PIN_P15);
 				_bb = new MicroBitPin(MICROBIT_ID_IO_P16, MICROBIT_PIN_P16, PIN_CAPABILITY_ALL);
 				
-				_mbp = new MicroBitPin(MICROBIT_ID_IO_P12, MICROBIT_PIN_P12, PIN_CAPABILITY_ALL);
+				_mbp = new MicroBitPin(MICROBIT_ID_IO_P3, MICROBIT_PIN_P3, PIN_CAPABILITY_ALL);
 
 				_lr = new AnalogIn(MICROBIT_PIN_P0);
 				_rr = new AnalogIn(MICROBIT_PIN_P1);
@@ -186,6 +188,12 @@ namespace microbot{
 			break;
 			case CalibrationParameters::LineFollowThresholdPercentage:
 			STANDARD_LF_THRESHOLD = (double)val / 100;
+			break;
+			case CalibrationParameters::LineFollowSpeed:
+			LF_SPEED_VALUE = val;
+			break;
+			case CalibrationParameters::LineFollowAngle:
+			LF_ANGLE = val;
 			break;
 			default:
 			//shrugs

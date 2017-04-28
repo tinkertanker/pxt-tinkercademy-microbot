@@ -15,6 +15,8 @@
     ServoStationaryAngle = 4,
     ServoTurnValue = 5,
     LineFollowThresholdPercentage = 6,
+    LineFollowSpeed = 7,
+    LineFollowAngle = 8,
     }
 declare namespace microbot {
 }
