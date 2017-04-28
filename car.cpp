@@ -1,13 +1,19 @@
 #include "pxt.h"
 
-#define STANDARD_SPEED_VALUE 512
-#define SERVO_SPEED_VALUE 0.8f
-#define STANDARD_LF_THRESHOLD 0.7f
 
 enum class CarType{
 	Servo = 0,
-	Standard = 1,
-	SingleMotor = 2
+	Standard = 1
+};
+
+enum class CalibrationParameters {
+	StandardSpeedValue = 0,
+	StandardForwardAngle = 1,
+	StandardTurnAngle = 2,
+	ServoSpeed = 3,
+	ServoStationaryAngle = 4,
+	ServoTurnValue = 5,
+	LineFollowThresholdPercentage = 6
 };
 
 
@@ -18,10 +24,14 @@ namespace microbot{
 	DigitalOut *_aa, *_ba;
 	MicroBitPin *_mbp, *_ab, *_bb;
 	AnalogIn *_lr, *_rr;
+	CarType cf;
 
 	bool running = false;
+	bool tl = false, tr = false;
 	int lh, rh, baseHeading;
 	int lf = 0;
+	int STANDARD_SPEED_VALUE = 1023, STANDARD_DIRECTION_STRAIGHT = 97, STANDARD_TURN_VALUE = 50, SERVO_SPEED_VALUE = 160, SERVO_STATIONARY_VALUE = 90, SERVO_TURN_VALUE = 40;
+	double STANDARD_LF_THRESHOLD = 0.7f;
 
 	void diet_fanta(){
 		while(true){
@@ -43,9 +53,9 @@ namespace microbot{
 			if(!running) {
 				//stop
 				_aa->write(1);
-				_ab->setAnalogValue(1024);
+				_ab->setAnalogValue(1023);
 				_ba->write(1);
-				_bb->setAnalogValue(1024);
+				_bb->setAnalogValue(1023);
 				while(!running){
 					uBit.sleep(100); //do nothing
 				}
@@ -57,21 +67,16 @@ namespace microbot{
 				_ba->write(0);
 				_bb->setAnalogValue(STANDARD_SPEED_VALUE);
 			} else {
+				_aa->write(0);
+				_ab->setAnalogValue(STANDARD_SPEED_VALUE/ 2);
+				_ba->write(0);
+				_bb->setAnalogValue(STANDARD_SPEED_VALUE / 2);
 				if(_lr->read() > STANDARD_LF_THRESHOLD) {
-					_aa->write(0);
-					_ab->setAnalogValue(STANDARD_SPEED_VALUE);
-					_ba->write(1);
-					_bb->setAnalogValue(1024);
+					_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT - 20);
 				} else if(_rr->read() > STANDARD_LF_THRESHOLD) {
-					_aa->write(1);
-					_ab->setAnalogValue(1024);
-					_ba->write(0);
-					_bb->setAnalogValue(STANDARD_SPEED_VALUE);
+					_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT + 20);
 				} else {
-					_aa->write(0);
-					_ab->setAnalogValue(STANDARD_SPEED_VALUE);
-					_ba->write(0);
-					_bb->setAnalogValue(STANDARD_SPEED_VALUE);
+					_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT);
 				}
 			}
 			
@@ -83,26 +88,32 @@ namespace microbot{
 		while(true){
 			if(!running) {
 				//stop
-				_ab->setAnalogValue(0);
-				_bb->setAnalogValue(0);
+				_ab->setAnalogValue(SERVO_STATIONARY_VALUE);
+				_bb->setAnalogValue(SERVO_STATIONARY_VALUE);
 				while(!running){
 					uBit.sleep(100); //do nothing
 				}
 			}
 
-			if(lf == 0){
+			if(tr) {
+				_ab->setServoValue(SERVO_STATIONARY_VALUE + SERVO_TURN_VALUE);
+				_bb->setServoValue(SERVO_STATIONARY_VALUE - SERVO_TURN_VALUE);
+			} else if (tl){
+				_ab->setServoValue(SERVO_STATIONARY_VALUE - SERVO_TURN_VALUE);
+				_bb->setServoValue(SERVO_STATIONARY_VALUE + SERVO_TURN_VALUE);
+			} else if(lf == 0){
 				_ab->setServoValue(SERVO_SPEED_VALUE);
 				_bb->setServoValue(SERVO_SPEED_VALUE);
 			} else {
 				if(_lr->read() > STANDARD_LF_THRESHOLD) {
-					_ab->setServoValue(88);
+					_ab->setServoValue(SERVO_STATIONARY_VALUE);
 					_bb->setServoValue(0);
 				} else if(_rr->read() > STANDARD_LF_THRESHOLD) {
 					_ab->setServoValue(180);
-					_bb->setServoValue(85);
+					_bb->setServoValue(SERVO_STATIONARY_VALUE);
 				} else {
-					_ab->setServoValue(95);
-					_bb->setServoValue(75);
+					_ab->setServoValue(SERVO_SPEED_VALUE);
+					_bb->setServoValue(SERVO_SPEED_VALUE);
 				}
 			}
 			uBit.sleep(100); //do nothing
@@ -116,18 +127,12 @@ namespace microbot{
 	//% blockId=car_init
 	//% block="initialise car type %car"
 	void init(CarType car){
+		cf = car;
 		switch (car){
-			case CarType::SingleMotor:
-				_ba = new DigitalOut(MICROBIT_PIN_P16);
-				_mbp = new MicroBitPin(MICROBIT_ID_IO_P0, MICROBIT_PIN_P0, PIN_CAPABILITY_ALL);
-
-				_ba -> write(1);
-				running = false;
-				create_fiber(diet_fanta);
-			break;
 			case CarType::Servo:
-				_ab = new MicroBitPin(MICROBIT_ID_IO_P16, MICROBIT_PIN_P16, PIN_CAPABILITY_ALL);
+				_ab = new MicroBitPin(MICROBIT_ID_IO_P3, MICROBIT_PIN_P3, PIN_CAPABILITY_ALL);
 				_bb = new MicroBitPin(MICROBIT_ID_IO_P2, MICROBIT_PIN_P2, PIN_CAPABILITY_ALL);
+
 				_lr = new AnalogIn(MICROBIT_PIN_P0);
 				_rr = new AnalogIn(MICROBIT_PIN_P1);
 				running = false;
@@ -145,14 +150,45 @@ namespace microbot{
 				_rr = new AnalogIn(MICROBIT_PIN_P1);
 
 				_aa -> write(1);
-				_ab -> setAnalogValue(1024);
+				_ab -> setAnalogValue(1023);
 				_ba -> write(1);
-				_bb -> setAnalogValue(1024);
+				_bb -> setAnalogValue(1023);
 				running = false;
 				create_fiber(diet_coke);
 			break;
 		}
 		
+	}
+
+	/**
+	* set calibration parameter.
+	*/
+	//% blockId=car_set_calibrate
+	//% block="set calibration parameter %param| to %val"
+	void calibrate(CalibrationParameters param, int val){
+		switch(param){
+			case CalibrationParameters::StandardSpeedValue:
+			STANDARD_SPEED_VALUE = val;
+			break;
+			case CalibrationParameters::StandardForwardAngle:
+			STANDARD_DIRECTION_STRAIGHT = val;
+			break;
+			case CalibrationParameters::StandardTurnAngle:
+			STANDARD_TURN_VALUE = val;
+			break;
+			case CalibrationParameters::ServoSpeed:
+			SERVO_SPEED_VALUE = val;
+			break;
+			case CalibrationParameters::ServoStationaryAngle:
+			SERVO_STATIONARY_VALUE = val;
+			break;
+			case CalibrationParameters::LineFollowThresholdPercentage:
+			STANDARD_LF_THRESHOLD = (double)val / 100;
+			break;
+			default:
+			//shrugs
+			break;
+		}
 	}
 
 	/**
@@ -163,12 +199,12 @@ namespace microbot{
 	void turnLeft(){
 		if(running) return;
 		//_dir->write(STANDARD_DIRECTION_LEFT);
-		_mbp->setServoValue(40);
+		if(cf == CarType::Standard){
+			_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT - STANDARD_TURN_VALUE);
+		} else {
+			tl = true;
+		}
 		running = true;
-		uBit.sleep(1000);
-		//_dir->write(STANDARD_DIRECTION_STRAIGHT);
-		_mbp->setServoValue(87);
-		running = false;
 	}
 
 	/**
@@ -179,12 +215,22 @@ namespace microbot{
 	void turnRight(){
 		if(running) return;
 		//_dir->write(STANDARD_DIRECTION_RIGHT);
-		_mbp->setServoValue(140);
+		if(cf == CarType::Standard){
+			_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT + STANDARD_TURN_VALUE);
+		} else {
+			tr = true;
+		}
+
 		running = true;
-		uBit.sleep(1000);
-		//_dir->write(STANDARD_DIRECTION_STRAIGHT);
-		_mbp->setServoValue(87);
-		running = false;
+	}
+
+	/**
+	* checks if black is detected
+	*/
+	//% blockId=car_check_square
+	//% block="car is on a black square"
+	bool isBlack(){
+		return (_lr->read() > STANDARD_LF_THRESHOLD && _rr->read() > STANDARD_LF_THRESHOLD);
 	}
 
 	/**
@@ -193,7 +239,7 @@ namespace microbot{
 	//% blockId=car_stop
 	//% block="stop"
 	void stop(){
-		printf("call to stop\r\n");
+		//printf("call to stop\r\n");
 		running = false;
 	}
 
@@ -205,7 +251,7 @@ namespace microbot{
 	void followLine(){
 		lf = 1;
 		//_dir->write(STANDARD_DIRECTION_STRAIGHT);
-		_mbp->setServoValue(87);
+		if(cf == CarType::Standard) _mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT);
 		running = true;
 	}
 
@@ -215,10 +261,10 @@ namespace microbot{
 	//% blockId=car_move
 	//% block="go forward"
 	void moveUp(){
-		printf("call to start\r\n");
+		//printf("call to start\r\n");
 		lf = 0;
 		//_dir->write(STANDARD_DIRECTION_STRAIGHT); //need to map this to correct angle
-		_mbp->setServoValue(87);
+		if(cf == CarType::Standard) _mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT);
 		running = true;
 	}
 

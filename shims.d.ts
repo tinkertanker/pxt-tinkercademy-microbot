@@ -14,6 +14,13 @@ declare namespace microbot {
     function init(car: CarType): void;
 
     /**
+     * set calibration parameter.
+     */
+    //% blockId=car_set_calibrate
+    //% block="set calibration parameter %param| to %val" shim=microbot::calibrate
+    function calibrate(param: CalibrationParameters, val: number): void;
+
+    /**
      * turns left.
      */
     //% blockId=car_left
@@ -26,6 +33,13 @@ declare namespace microbot {
     //% blockId=car_right
     //% block="turn right" shim=microbot::turnRight
     function turnRight(): void;
+
+    /**
+     * checks if black is detected
+     */
+    //% blockId=car_check_square
+    //% block="car is on a black square" shim=microbot::isBlack
+    function isBlack(): boolean;
 
     /**
      * stops the car.
