@@ -33,7 +33,7 @@ namespace microbot{
 	int lh, rh, baseHeading;
 	int lf = 0;
 	int STANDARD_SPEED_VALUE = 1023, STANDARD_DIRECTION_STRAIGHT = 97, STANDARD_TURN_VALUE = 50, SERVO_SPEED_VALUE = 70, SERVO_STATIONARY_VALUE = 90, SERVO_TURN_VALUE = 40, LF_SPEED_VALUE = 100, LF_ANGLE = 50;
-	double STANDARD_LF_THRESHOLD = 0.7f;
+	float STANDARD_LF_THRESHOLD = 0.7f;
 
 	void diet_fanta(){
 		while(true){
@@ -74,9 +74,9 @@ namespace microbot{
 				_ba->write(0);
 				_bb->setAnalogValue(LF_SPEED_VALUE);
 				if(_lr->read() > STANDARD_LF_THRESHOLD) {
-					_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT - LF_ANGLE);
-				} else if(_rr->read() > STANDARD_LF_THRESHOLD) {
 					_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT + LF_ANGLE);
+				} else if(_rr->read() > STANDARD_LF_THRESHOLD) {
+					_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT - LF_ANGLE);
 				} else {
 					_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT);
 				}
@@ -106,8 +106,8 @@ namespace microbot{
 				_ab->setServoValue(SERVO_STATIONARY_VALUE - SERVO_TURN_VALUE);
 				_bb->setServoValue(SERVO_STATIONARY_VALUE - SERVO_TURN_VALUE);
 			} else if(lf == 0){
-				_ab->setServoValue(SERVO_SPEED_VALUE);
-				_bb->setServoValue(SERVO_SPEED_VALUE);
+				_ab->setServoValue(SERVO_STATIONARY_VALUE + SERVO_SPEED_VALUE);
+				_bb->setServoValue(SERVO_STATIONARY_VALUE - SERVO_SPEED_VALUE);
 			} else {
 				if(_lr->read() > STANDARD_LF_THRESHOLD) {
 					_ab->setServoValue(SERVO_STATIONARY_VALUE);
@@ -187,7 +187,7 @@ namespace microbot{
 			SERVO_STATIONARY_VALUE = val;
 			break;
 			case CalibrationParameters::LineFollowThresholdPercentage:
-			STANDARD_LF_THRESHOLD = (double)val / 100;
+			STANDARD_LF_THRESHOLD = (float)val / 100;
 			break;
 			case CalibrationParameters::LineFollowSpeed:
 			LF_SPEED_VALUE = val;
