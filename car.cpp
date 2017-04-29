@@ -15,7 +15,9 @@ enum class CalibrationParameters {
 	ServoTurnValue = 5,
 	LineFollowThresholdPercentage = 6,
 	LineFollowSpeed = 7,
-	LineFollowAngle = 8
+	LineFollowAngle = 8,
+	LineFollowLeftThres = 9,
+	LineFollowRightThres = 10
 };
 
 
@@ -33,7 +35,7 @@ namespace microbot{
 	int lh, rh, baseHeading;
 	int lf = 0;
 	int STANDARD_SPEED_VALUE = 1023, STANDARD_DIRECTION_STRAIGHT = 97, STANDARD_TURN_VALUE = 50, SERVO_SPEED_VALUE = 70, SERVO_STATIONARY_VALUE = 90, SERVO_TURN_VALUE = 40, LF_SPEED_VALUE = 100, LF_ANGLE = 50;
-	float STANDARD_LF_THRESHOLD = 0.7f;
+	float LEFT_LF_THRESHOLD = 0.7f, RIGHT_LF_THRESHOLD = 0.7f;
 
 	void diet_fanta(){
 		while(true){
@@ -73,10 +75,10 @@ namespace microbot{
 				_ab->setAnalogValue(LF_SPEED_VALUE);
 				_ba->write(0);
 				_bb->setAnalogValue(LF_SPEED_VALUE);
-				if(_lr->read() > STANDARD_LF_THRESHOLD) {
-					_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT + LF_ANGLE);
-				} else if(_rr->read() > STANDARD_LF_THRESHOLD) {
+				if(_lr->read() > LEFT_LF_THRESHOLD) {
 					_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT - LF_ANGLE);
+				} else if(_rr->read() > RIGHT_LF_THRESHOLD) {
+					_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT + LF_ANGLE);
 				} else {
 					_mbp->setServoValue(STANDARD_DIRECTION_STRAIGHT);
 				}
@@ -109,10 +111,10 @@ namespace microbot{
 				_ab->setServoValue(SERVO_STATIONARY_VALUE + SERVO_SPEED_VALUE);
 				_bb->setServoValue(SERVO_STATIONARY_VALUE - SERVO_SPEED_VALUE);
 			} else {
-				if(_lr->read() > STANDARD_LF_THRESHOLD) {
+				if(_lr->read() > LEFT_LF_THRESHOLD) {
 					_ab->setServoValue(SERVO_STATIONARY_VALUE);
 					_bb->setServoValue(0);
-				} else if(_rr->read() > STANDARD_LF_THRESHOLD) {
+				} else if(_rr->read() > RIGHT_LF_THRESHOLD) {
 					_ab->setServoValue(180);
 					_bb->setServoValue(SERVO_STATIONARY_VALUE);
 				} else {
@@ -161,7 +163,6 @@ namespace microbot{
 				create_fiber(diet_coke);
 			break;
 		}
-		
 	}
 
 	/**
@@ -187,13 +188,18 @@ namespace microbot{
 			SERVO_STATIONARY_VALUE = val;
 			break;
 			case CalibrationParameters::LineFollowThresholdPercentage:
-			STANDARD_LF_THRESHOLD = (float)val / 100;
 			break;
 			case CalibrationParameters::LineFollowSpeed:
 			LF_SPEED_VALUE = val;
 			break;
 			case CalibrationParameters::LineFollowAngle:
 			LF_ANGLE = val;
+			break;
+			case CalibrationParameters::LineFollowLeftThres:
+			LEFT_LF_THRESHOLD = (float) val / 100;
+			break;
+			case CalibrationParameters::LineFollowRightThres:
+			RIGHT_LF_THRESHOLD = (float) val / 100;
 			break;
 			default:
 			//shrugs
@@ -240,7 +246,7 @@ namespace microbot{
 	//% blockId=car_check_square
 	//% block="car is on a black square"
 	bool isBlack(){
-		return (_lr->read() > STANDARD_LF_THRESHOLD && _rr->read() > STANDARD_LF_THRESHOLD);
+		return (_lr->read() > LEFT_LF_THRESHOLD && _rr->read() > RIGHT_LF_THRESHOLD);
 	}
 
 	/**

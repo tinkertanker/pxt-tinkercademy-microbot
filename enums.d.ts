@@ -17,6 +17,8 @@
     LineFollowThresholdPercentage = 6,
     LineFollowSpeed = 7,
     LineFollowAngle = 8,
+    LineFollowLeftThres = 9,
+    LineFollowRightThres = 10,
     }
 declare namespace microbot {
 }
